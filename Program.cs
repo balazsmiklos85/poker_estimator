@@ -23,7 +23,14 @@ namespace poker_estimator
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            _mlContext = new MLContext(seed: 0);
+            _trainingDataView = _mlContext.Data.LoadFromTextFile<GitHubIssue>(
+                _trainDataPath,hasHeader: true);
+            var pipeline = ProcessData();
+        }
+        public static IEstimator<ITransformer> ProcessData()
+        {
+            return null;
         }
     }
 }
