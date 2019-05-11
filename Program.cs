@@ -49,7 +49,11 @@ namespace poker_estimator
         private static object BuildAndTrainModel(IDataView trainingDataView,
                                                  IEstimator<ITransformer> pipeline)
         {
-            
+            var trainingPipeline = pipeline.Append(
+                _mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy(
+                    "Label", "Features"))
+                    .Append(_mlContext.Transforms.Conversion.MapKeyToValue(
+                        "PredictedLabel"));
         }
 
     }
