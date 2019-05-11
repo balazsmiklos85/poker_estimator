@@ -63,6 +63,7 @@ namespace poker_estimator
             };
             var prediction = _predEngine.Predict(issue);
             Console.WriteLine($"=============== Single Prediction just-trained-model - Result: {prediction.Area} ===============");
+            return trainingPipeline;
         }
 
     }
