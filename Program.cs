@@ -27,7 +27,10 @@ namespace poker_estimator
             _trainingDataView = _mlContext.Data.LoadFromTextFile<GitHubIssue>(
                 _trainDataPath,hasHeader: true);
             var pipeline = ProcessData();
+            var trainingPipeline = BuildAndTrainModel(_trainingDataView,
+                                                      pipeline);
         }
+
         public static IEstimator<ITransformer> ProcessData()
         {
             return _mlContext.Transforms.Conversion.MapValueToKey(
@@ -42,5 +45,26 @@ namespace poker_estimator
                     "Features", "TitleFeaturized", "DescriptionFeaturized"))
                 .AppendCacheCheckpoint(_mlContext);
         }
+
+        private static object BuildAndTrainModel(IDataView trainingDataView,
+                                                 IEstimator<ITransformer> pipeline)
+        {
+            var trainingPipeline = pipeline.Append(
+                _mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy(
+                    "Label", "Features"))
+                    .Append(_mlContext.Transforms.Conversion.MapKeyToValue(
+                        "PredictedLabel"));
+            _trainedModel = trainingPipeline.Fit(trainingDataView);
+            _predEngine = _mlContext.Model.CreatePredictionEngine<GitHubIssue, IssuePrediction>(
+                _trainedModel);
+            GitHubIssue issue = new GitHubIssue() {
+                Title = "WebSockets communication is slow in my machine",
+                Description = "The WebSockets communication used under the covers by SignalR looks like is going slow in my development machine.."
+            };
+            var prediction = _predEngine.Predict(issue);
+            Console.WriteLine($"=============== Single Prediction just-trained-model - Result: {prediction.Area} ===============");
+            return trainingPipeline;
+        }
+
     }
 }
