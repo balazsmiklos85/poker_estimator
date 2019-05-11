@@ -39,7 +39,8 @@ namespace poker_estimator
                             inputColumnName: "Description",
                             outputColumnName: "DescriptionFeaturized"))
                 .Append(_mlContext.Transforms.Concatenate(
-                    "Features", "TitleFeaturized", "DescriptionFeaturized"));
+                    "Features", "TitleFeaturized", "DescriptionFeaturized"))
+                .AppendCacheCheckpoint(_mlContext);
         }
     }
 }
