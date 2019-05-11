@@ -27,7 +27,10 @@ namespace poker_estimator
             _trainingDataView = _mlContext.Data.LoadFromTextFile<GitHubIssue>(
                 _trainDataPath,hasHeader: true);
             var pipeline = ProcessData();
+            var trainingPipeline = BuildAndTrainModel(_trainingDataView,
+                                                      pipeline);
         }
+
         public static IEstimator<ITransformer> ProcessData()
         {
             return _mlContext.Transforms.Conversion.MapValueToKey(
@@ -42,5 +45,12 @@ namespace poker_estimator
                     "Features", "TitleFeaturized", "DescriptionFeaturized"))
                 .AppendCacheCheckpoint(_mlContext);
         }
+
+        private static object BuildAndTrainModel(IDataView trainingDataView,
+                                                 IEstimator<ITransformer> pipeline)
+        {
+            
+        }
+
     }
 }
