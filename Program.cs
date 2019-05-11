@@ -30,7 +30,14 @@ namespace poker_estimator
         }
         public static IEstimator<ITransformer> ProcessData()
         {
-            return _mlContext.Transforms.Conversion.MapValueToKey(inputColumnName: "Area", outputColumnName: "Label");
+            return _mlContext.Transforms.Conversion.MapValueToKey(
+                    inputColumnName: "Area", outputColumnName: "Label")
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                            inputColumnName: "Title",
+                            outputColumnName: "TitleFeaturized"))
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                            inputColumnName: "Description",
+                            outputColumnName: "DescriptionFeaturized"));
         }
     }
 }
