@@ -54,6 +54,7 @@ namespace poker_estimator
                     "Label", "Features"))
                     .Append(_mlContext.Transforms.Conversion.MapKeyToValue(
                         "PredictedLabel"));
+            _trainedModel = trainingPipeline.Fit(trainingDataView);
         }
 
     }
