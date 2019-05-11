@@ -55,6 +55,8 @@ namespace poker_estimator
                     .Append(_mlContext.Transforms.Conversion.MapKeyToValue(
                         "PredictedLabel"));
             _trainedModel = trainingPipeline.Fit(trainingDataView);
+            _predEngine = _mlContext.Model.CreatePredictionEngine<GitHubIssue, IssuePrediction>(
+                _trainedModel);
         }
 
     }
