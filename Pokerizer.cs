@@ -8,7 +8,7 @@ internal class Pokerizer
     {
         try
         {
-            this.time = ulong.Parse(time) / 1000d / 60d;
+            this.time = ulong.Parse(time) / 28800.0d;
         }
         catch (Exception)
         {
