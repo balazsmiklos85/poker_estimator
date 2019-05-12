@@ -82,7 +82,7 @@ namespace poker_estimator
             _predEngine = _mlContext.Model.CreatePredictionEngine<JiraIssue, IssuePrediction>(
                 _trainedModel);
             JiraIssue issue = new JiraIssue() {
-                Summary = "Rewrite the whole application, but also consider Kreditentscheid and Websphere and make eSpresso to write the results to Leasman"
+                Summary = "WebSphere Upgrade from 9.0 to OpenLiberty"
             };
             var prediction = _predEngine.Predict(issue);
             Console.WriteLine($"=============== Single Prediction just-trained-model - Result: {prediction.Time} ===============");
