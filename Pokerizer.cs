@@ -16,7 +16,7 @@ internal class Pokerizer
         }
     }
 
-    public string toString()
+    public string ToPokerValue()
     {
         if (time == null)
             return "?";
