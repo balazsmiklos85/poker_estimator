@@ -17,14 +17,14 @@ namespace poker_estimator
             Path.Combine(_appPath, "..", "..", "..", "Models", "model.zip");
 
         private static MLContext _mlContext;
-        private static PredictionEngine<GitHubIssue, IssuePrediction> _predEngine;
+        private static PredictionEngine<JiraIssue, IssuePrediction> _predEngine;
         private static ITransformer _trainedModel;
         static IDataView _trainingDataView;
 
         static void Main(string[] args)
         {
             _mlContext = new MLContext(seed: 0);
-            _trainingDataView = _mlContext.Data.LoadFromTextFile<GitHubIssue>(
+            _trainingDataView = _mlContext.Data.LoadFromTextFile<JiraIssue>(
                 _trainDataPath,hasHeader: true);
             var pipeline = ProcessData();
             var trainingPipeline = BuildAndTrainModel(_trainingDataView,
@@ -34,15 +34,15 @@ namespace poker_estimator
         public static IEstimator<ITransformer> ProcessData()
         {
             return _mlContext.Transforms.Conversion.MapValueToKey(
-                    inputColumnName: "Area", outputColumnName: "Label")
+                    inputColumnName: "Time", outputColumnName: "PokerValue")
                 .Append(_mlContext.Transforms.Text.FeaturizeText(
-                            inputColumnName: "Title",
-                            outputColumnName: "TitleFeaturized"))
-                .Append(_mlContext.Transforms.Text.FeaturizeText(
-                            inputColumnName: "Description",
-                            outputColumnName: "DescriptionFeaturized"))
+                            inputColumnName: "Summary",
+                            outputColumnName: "SummaryFeaturized"))
+//                .Append(_mlContext.Transforms.Text.FeaturizeText(
+//                            inputColumnName: "Description",
+//                            outputColumnName: "DescriptionFeaturized"))
                 .Append(_mlContext.Transforms.Concatenate(
-                    "Features", "TitleFeaturized", "DescriptionFeaturized"))
+                    "Features", "SummaryFeaturized"/*, "DescriptionFeaturized"*/))
                 .AppendCacheCheckpoint(_mlContext);
         }
 
@@ -51,18 +51,17 @@ namespace poker_estimator
         {
             var trainingPipeline = pipeline.Append(
                 _mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy(
-                    "Label", "Features"))
+                    "PokerValue", "Features"))
                     .Append(_mlContext.Transforms.Conversion.MapKeyToValue(
                         "PredictedLabel"));
             _trainedModel = trainingPipeline.Fit(trainingDataView);
-            _predEngine = _mlContext.Model.CreatePredictionEngine<GitHubIssue, IssuePrediction>(
+            _predEngine = _mlContext.Model.CreatePredictionEngine<JiraIssue, IssuePrediction>(
                 _trainedModel);
-            GitHubIssue issue = new GitHubIssue() {
-                Title = "WebSockets communication is slow in my machine",
-                Description = "The WebSockets communication used under the covers by SignalR looks like is going slow in my development machine.."
+            JiraIssue issue = new JiraIssue() {
+                Summary = "Rewrite the whole application"
             };
             var prediction = _predEngine.Predict(issue);
-            Console.WriteLine($"=============== Single Prediction just-trained-model - Result: {prediction.Area} ===============");
+            Console.WriteLine($"=============== Single Prediction just-trained-model - Result: {prediction.Time} ===============");
             return trainingPipeline;
         }
 
