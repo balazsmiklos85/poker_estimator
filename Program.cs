@@ -10,9 +10,9 @@ namespace poker_estimator
         private static string _appPath =>
             Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]);
         private static string _trainDataPath =>
-            Path.Combine(_appPath, "..", "..", "..", "Data", "issues_train.tsv");
+            Path.Combine(_appPath, "..", "..", "..", "Data", "jira.csv");
         private static string _testDataPath =>
-            Path.Combine(_appPath, "..", "..", "..", "Data", "issues_test.tsv");
+            Path.Combine(_appPath, "..", "..", "..", "Data", "jira_test.csv");
         private static string _modelPath =>
             Path.Combine(_appPath, "..", "..", "..", "Models", "model.zip");
 
