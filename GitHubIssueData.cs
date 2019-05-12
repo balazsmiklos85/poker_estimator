@@ -1,19 +1,22 @@
 using Microsoft.ML.Data;
 
-public class GitHubIssue
+public class JiraIssue
 {
     [LoadColumn(0)]
-    public string ID { get; set; }
+    public string Key { get; set; }
     [LoadColumn(1)]
-    public string Area { get; set; }
+    public string Id { get; set; }
     [LoadColumn(2)]
-    public string Title { get; set; }
+    public string Parent { get; set; }
     [LoadColumn(3)]
-    public string Description { get; set; }
+    public string Summary { get; set; }
+    [LoadColumn(4)]
+    public string Time { get; set; }
+
 }
 
 public class IssuePrediction
 {
     [ColumnName("PredictedLabel")]
-    public string Area;
+    public string Time;
 }
