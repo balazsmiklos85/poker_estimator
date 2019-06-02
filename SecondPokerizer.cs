@@ -7,7 +7,7 @@ namespace poker_estimator
 {
     internal class SecondPokerizer
     {
-        private const long Day = 8 * 60 * 60;
+        public const long Day = 8 * 60 * 60;
         private static readonly ImmutableList<decimal> PokerKeys =
             new List<decimal> { (decimal) 0.5, 1, 2, 3, 5, 8, 13, 20, 40, 100 }
                 .ToImmutableList();

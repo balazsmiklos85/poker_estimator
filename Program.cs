@@ -19,25 +19,25 @@ namespace poker_estimator
             Path.Combine(AppPath, "..", "..", "..", "Data", "to_estimate.xml");
 
         private static MLContext _mlContext;
-        private static PredictionEngine<JiraIssue, IssuePrediction> _predEngine;
-        private static ITransformer _trainedModel;
+        private static ThreePointPokerPredictor _predEngine;
         private static IDataView _trainingDataView;
 
         private static void Main(string[] args)
         {
             _mlContext = new MLContext(seed: 0);
+            Console.WriteLine("=== Training ===");
             var fromXml = LoadXml(TrainDataInputPath);
             _trainingDataView = _mlContext.Data.LoadFromEnumerable(fromXml);
             var pipeline = ProcessData();
-            var trainingPipeline = BuildAndTrainModel(_trainingDataView,
-                                                      pipeline);
+            BuildAndTrainModel(_trainingDataView, pipeline);
         }
 
         private static IEnumerable<JiraIssue> LoadXml(string path)
         {
+            Console.WriteLine($"Loading file: {path}");
             var trainingData = new XmlDocument();
             trainingData.Load(path);
-            return trainingData.GetElementsByTagName("item").Cast<XmlNode>()
+            var result = trainingData.GetElementsByTagName("item").Cast<XmlNode>()
                 .Select(item => new JiraIssue
                 {
                     Key = GetValue(item, "key"),
@@ -48,6 +48,8 @@ namespace poker_estimator
                     Time = new SecondPokerizer(GetAttribute(GetChild(item, "timespent"), "seconds")).ToPokerDays(),
                     //TODO more fields
                 }).ToList();
+            Console.WriteLine($"{result.Count} issues loaded");
+            return result;
         }
 
         private static string GetAttribute(XmlNode node, string attributeKey)
@@ -90,25 +92,18 @@ namespace poker_estimator
                 .AppendCacheCheckpoint(_mlContext);
         }
 
-        private static object BuildAndTrainModel(IDataView trainingDataView,
+        private static void BuildAndTrainModel(IDataView trainingDataView,
                                                  IEstimator<ITransformer> pipeline)
         {
-            var trainingPipeline = pipeline.Append(
-                _mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy(
-                    "PokerValue", "Features"))
-                    .Append(_mlContext.Transforms.Conversion.MapKeyToValue(
-                        "PredictedLabel"));
-            _trainedModel = trainingPipeline.Fit(trainingDataView);
-            _predEngine = _mlContext.Model.CreatePredictionEngine<JiraIssue, IssuePrediction>(
-                _trainedModel);
+            _predEngine = new ThreePointPokerPredictor(_mlContext, trainingDataView, pipeline);
 
+            Console.WriteLine("=== Estimation ===");
             var toEstimate = LoadXml(DataInputPath);
             foreach (var issue in toEstimate)
             {
                 var prediction = _predEngine.Predict(issue);
-                Console.WriteLine($"=============== {issue.Key}: {prediction.Time} ===============");
+                Console.WriteLine($"{issue.Key}: {prediction.Min}/{prediction.Mean}/{prediction.Max} = {prediction.Time}");
             }
-            return trainingPipeline;
         }
 
     }
