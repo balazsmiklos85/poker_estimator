@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -46,6 +45,12 @@ namespace poker_estimator
                     Description = GetValue(item, "description"),
                     Type = GetValue(item, "type"),
                     Time = new SecondPokerizer(GetAttribute(GetChild(item, "timespent"), "seconds")).ToPokerDays(),
+                    Environment = GetValue(item, "environment"),
+                    Reporter = GetValue(item, "reporter"),
+                    Version = GetValue(item, "version"),
+                    Priority = GetValue(item, "priority"),
+                    OriginalEstimate = new SecondPokerizer(GetAttribute(GetChild(item, "timeestimate"), "seconds")).ToPokerDays(),
+                    CreatedTime = GetValue(item, "created"),
                     //TODO more fields
                 }).ToList();
             Console.WriteLine($"{result.Count} issues loaded");
@@ -87,8 +92,28 @@ namespace poker_estimator
                 .Append(_mlContext.Transforms.Text.FeaturizeText(
                     inputColumnName: "Description",
                     outputColumnName: "DescriptionFeaturized"))
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                    inputColumnName: "Environment",
+                    outputColumnName: "EnvironmentFeaturized"))
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                    inputColumnName: "Reporter",
+                    outputColumnName: "ReporterFeaturized"))
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                    inputColumnName: "Version",
+                    outputColumnName: "VersionFeaturized"))
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                    inputColumnName: "Priority",
+                    outputColumnName: "PriorityFeaturized"))
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                    inputColumnName: "OriginalEstimate",
+                    outputColumnName: "OriginalEstimateFeaturized"))
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                    inputColumnName: "CreatedTime",
+                    outputColumnName: "CreatedTimeFeaturized"))
                 .Append(_mlContext.Transforms.Concatenate(
-                    "Features", "TypeFeaturized", "TitleFeaturized", "DescriptionFeaturized"))
+                    "Features", "TypeFeaturized", "TitleFeaturized",
+                    "DescriptionFeaturized", "EnvironmentFeaturized", "ReporterFeaturized", "VersionFeaturized",
+                    "PriorityFeaturized", "OriginalEstimateFeaturized", "CreatedTimeFeaturized"))
                 .AppendCacheCheckpoint(_mlContext);
         }
 

@@ -1,5 +1,3 @@
-using Microsoft.ML.Data;
-
 namespace poker_estimator
 {
     public class JiraIssue
@@ -11,6 +9,11 @@ namespace poker_estimator
         public string Title { get; set; }
         public string Description { get; set; }
         public string Time { get; set; }
-
+        public string Environment { get; set; }
+        public string Reporter { get; set; }
+        public string Version { get; set; }
+        public string Priority { get; set; }
+        public string OriginalEstimate { get; set; }
+        public string CreatedTime { get; set; }
     }
 }
