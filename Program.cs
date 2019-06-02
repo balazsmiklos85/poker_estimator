@@ -41,6 +41,7 @@ namespace poker_estimator
                 {
                     Key = GetValue(item, "key"),
                     Id = GetAttribute(GetChild(item, "key"), "id"),
+                    ParentId = GetAttribute(GetChild(item, "parent"), "id"), 
                     Title = GetValue(item, "title"),
                     Description = GetValue(item, "description"),
                     Type = GetValue(item, "type"),
@@ -53,6 +54,14 @@ namespace poker_estimator
                     CreatedTime = GetValue(item, "created"),
                     //TODO more fields
                 }).ToList();
+            foreach (var issue in result)
+            {
+                var parent = result.Where(r => r.Id == issue.ParentId && !string.IsNullOrEmpty(issue.ParentId))
+                    .DefaultIfEmpty(new JiraIssue())
+                    .FirstOrDefault();
+                issue.ParentTitle = parent?.Title;
+                issue.ParentDescription = parent?.Description;
+            }
             Console.WriteLine($"{result.Count} issues loaded");
             return result;
         }
@@ -110,10 +119,17 @@ namespace poker_estimator
                 .Append(_mlContext.Transforms.Text.FeaturizeText(
                     inputColumnName: "CreatedTime",
                     outputColumnName: "CreatedTimeFeaturized"))
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                    inputColumnName: "ParentTitle",
+                    outputColumnName: "ParentTitleFeaturized"))
+                .Append(_mlContext.Transforms.Text.FeaturizeText(
+                    inputColumnName: "ParentDescription",
+                    outputColumnName: "ParentDescriptionFeaturized"))
                 .Append(_mlContext.Transforms.Concatenate(
                     "Features", "TypeFeaturized", "TitleFeaturized",
                     "DescriptionFeaturized", "EnvironmentFeaturized", "ReporterFeaturized", "VersionFeaturized",
-                    "PriorityFeaturized", "OriginalEstimateFeaturized", "CreatedTimeFeaturized"))
+                    "PriorityFeaturized", "OriginalEstimateFeaturized", "CreatedTimeFeaturized",
+                    "ParentTitleFeaturized", "ParentDescriptionFeaturized"))
                 .AppendCacheCheckpoint(_mlContext);
         }
 

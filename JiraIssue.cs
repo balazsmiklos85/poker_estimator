@@ -15,5 +15,8 @@ namespace poker_estimator
         public string Priority { get; set; }
         public string OriginalEstimate { get; set; }
         public string CreatedTime { get; set; }
+        public string ParentId { get; set; }
+        public string ParentTitle { get; set; }
+        public string ParentDescription { get; set; }
     }
 }
