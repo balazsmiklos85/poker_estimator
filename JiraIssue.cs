@@ -8,7 +8,7 @@ namespace poker_estimator
         public string Id { get; set; }
         public string Parent { get; set; }
         public string Type { get; set; }
-        public string Summary { get; set; }
+        public string Title { get; set; }
         public string Description { get; set; }
         public string Time { get; set; }
 
