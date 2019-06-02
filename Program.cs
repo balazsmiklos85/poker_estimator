@@ -18,17 +18,23 @@ namespace poker_estimator
             Path.Combine(AppPath, "..", "..", "..", "Data", "to_estimate.xml");
 
         private static MLContext _mlContext;
-        private static ThreePointPokerPredictor _predEngine;
-        private static IDataView _trainingDataView;
+        private static ThreePointPokerPredictor _predictionEngine;
 
         private static void Main(string[] args)
         {
             _mlContext = new MLContext(seed: 0);
             Console.WriteLine("=== Training ===");
-            var fromXml = LoadXml(TrainDataInputPath);
-            _trainingDataView = _mlContext.Data.LoadFromEnumerable(fromXml);
+            var fromXml = LoadXml(TrainDataInputPath).ToList();
             var pipeline = ProcessData();
-            BuildAndTrainModel(_trainingDataView, pipeline);
+            _predictionEngine = new ThreePointPokerPredictor(_mlContext, fromXml, pipeline);
+
+            Console.WriteLine("=== Estimation ===");
+            var toEstimate = LoadXml(DataInputPath);
+            foreach (var issue in toEstimate)
+            {
+                var prediction = _predictionEngine.Predict(issue);
+                Console.WriteLine($"{issue.Key}: {prediction.Min}/{prediction.Mean}/{prediction.Max} = {prediction.Time}");
+            }
         }
 
         private static IEnumerable<JiraIssue> LoadXml(string path)
@@ -132,20 +138,5 @@ namespace poker_estimator
                     "ParentTitleFeaturized", "ParentDescriptionFeaturized"))
                 .AppendCacheCheckpoint(_mlContext);
         }
-
-        private static void BuildAndTrainModel(IDataView trainingDataView,
-                                                 IEstimator<ITransformer> pipeline)
-        {
-            _predEngine = new ThreePointPokerPredictor(_mlContext, trainingDataView, pipeline);
-
-            Console.WriteLine("=== Estimation ===");
-            var toEstimate = LoadXml(DataInputPath);
-            foreach (var issue in toEstimate)
-            {
-                var prediction = _predEngine.Predict(issue);
-                Console.WriteLine($"{issue.Key}: {prediction.Min}/{prediction.Mean}/{prediction.Max} = {prediction.Time}");
-            }
-        }
-
     }
 }
