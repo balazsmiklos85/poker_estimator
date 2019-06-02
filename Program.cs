@@ -15,6 +15,8 @@ namespace poker_estimator
         
         private static string TrainDataInputPath =>
             Path.Combine(AppPath, "..", "..", "..", "Data", "jira.xml");
+        private static string DataInputPath =>
+            Path.Combine(AppPath, "..", "..", "..", "Data", "to_estimate.xml");
 
         private static MLContext _mlContext;
         private static PredictionEngine<JiraIssue, IssuePrediction> _predEngine;
@@ -24,17 +26,17 @@ namespace poker_estimator
         private static void Main(string[] args)
         {
             _mlContext = new MLContext(seed: 0);
-            var fromXml = LoadXml();
+            var fromXml = LoadXml(TrainDataInputPath);
             _trainingDataView = _mlContext.Data.LoadFromEnumerable(fromXml);
             var pipeline = ProcessData();
             var trainingPipeline = BuildAndTrainModel(_trainingDataView,
                                                       pipeline);
         }
 
-        private static IEnumerable<JiraIssue> LoadXml()
+        private static IEnumerable<JiraIssue> LoadXml(string path)
         {
             var trainingData = new XmlDocument();
-            trainingData.Load(TrainDataInputPath);
+            trainingData.Load(path);
             return trainingData.GetElementsByTagName("item").Cast<XmlNode>()
                 .Select(item => new JiraIssue
                 {
@@ -50,7 +52,7 @@ namespace poker_estimator
 
         private static string GetAttribute(XmlNode node, string attributeKey)
         {
-            return node.Attributes.Cast<XmlAttribute>()
+            return node?.Attributes.Cast<XmlAttribute>()
                 .Where(attribute => attribute.Name == attributeKey)
                 .Select(attribute => attribute.Value)
                 .DefaultIfEmpty(null)
@@ -99,14 +101,13 @@ namespace poker_estimator
             _trainedModel = trainingPipeline.Fit(trainingDataView);
             _predEngine = _mlContext.Model.CreatePredictionEngine<JiraIssue, IssuePrediction>(
                 _trainedModel);
-            var issue = new JiraIssue
+
+            var toEstimate = LoadXml(DataInputPath);
+            foreach (var issue in toEstimate)
             {
-                Type = "Change request",
-                Title = "WebSphere Upgrade from 9.0 to OpenLiberty",
-                Description = "Upgrade all dependencies"
-            };
-            var prediction = _predEngine.Predict(issue);
-            Console.WriteLine($"=============== Single Prediction just-trained-model - Result: {prediction.Time} ===============");
+                var prediction = _predEngine.Predict(issue);
+                Console.WriteLine($"=============== {issue.Key}: {prediction.Time} ===============");
+            }
             return trainingPipeline;
         }
 
