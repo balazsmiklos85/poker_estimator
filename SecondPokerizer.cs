@@ -8,12 +8,12 @@ namespace poker_estimator
     internal class SecondPokerizer
     {
         private const long Day = 8 * 60 * 60;
-        private static readonly ImmutableList<ulong> PokerKeys =
-            new List<ulong> { 1, 2, 3, 5, 8, 13, 20, 40, 100 }
+        private static readonly ImmutableList<decimal> PokerKeys =
+            new List<decimal> { (decimal) 0.5, 1, 2, 3, 5, 8, 13, 20, 40, 100 }
                 .ToImmutableList();
         private static readonly ImmutableDictionary<ulong, string> PokerDictionary =
             PokerKeys.ToImmutableDictionary(
-                key => key * Day,
+                key => (ulong)(key * Day),
                 key => key.ToString());
     
         private readonly ulong? _seconds;
